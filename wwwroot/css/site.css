@@ -1,0 +1,114 @@
+body { background-color: #f5f6f8; }
+.card { border-radius: .5rem; }
+table.table thead { background-color: #eef1f5; }
+:root {
+    --brand-cyan: #1E9FD4;
+    --brand-blue: #3370BB;
+    --brand-purple: #6A3DB0;
+    --brand-dark: #1E1E24;
+    --brand-gradient: linear-gradient(135deg, #1E9FD4 0%, #3370BB 50%, #6A3DB0 100%);
+    --bs-primary: #3370BB;
+    --bs-primary-rgb: 51, 112, 187;
+    --bs-info: #1E9FD4;
+    --bs-info-rgb: 30, 159, 212;
+    --bs-link-color: #2A5E9E;
+    --bs-link-color-rgb: 42, 94, 158;
+    --bs-link-hover-color: #6A3DB0;
+    --bs-link-hover-color-rgb: 106, 61, 176;
+}
+
+.btn-primary {
+    --bs-btn-bg: #3370BB;
+    --bs-btn-border-color: #3370BB;
+    --bs-btn-hover-bg: #2A5E9E;
+    --bs-btn-hover-border-color: #2A5E9E;
+    --bs-btn-active-bg: #234F85;
+    --bs-btn-active-border-color: #234F85;
+    --bs-btn-disabled-bg: #3370BB;
+    --bs-btn-disabled-border-color: #3370BB;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: #3370BB;
+    --bs-btn-border-color: #3370BB;
+    --bs-btn-hover-bg: #3370BB;
+    --bs-btn-hover-border-color: #3370BB;
+    --bs-btn-active-bg: #2A5E9E;
+    --bs-btn-active-border-color: #2A5E9E;
+    --bs-btn-disabled-color: #3370BB;
+    --bs-btn-disabled-border-color: #3370BB;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #3370BB;
+    box-shadow: 0 0 0 .25rem rgba(51, 112, 187, .25);
+}
+
+.form-check-input:checked {
+    background-color: #3370BB;
+    border-color: #3370BB;
+}
+
+.navbar.bg-white {
+    --bs-navbar-color: #1E1E24;
+    --bs-navbar-hover-color: #3370BB;
+    --bs-navbar-active-color: #6A3DB0;
+    border-bottom: 3px solid transparent;
+    border-image: var(--brand-gradient) 1;
+    box-shadow: 0 2px 10px rgba(30, 30, 36, .06);
+}
+
+.card-header {
+    border-bottom: 2px solid var(--brand-cyan);
+}
+.card.text-bg-primary {
+    background-image: var(--brand-gradient);
+}
+.brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 0;
+}
+
+.brand-icon {
+    height: 40px;
+    width: auto;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.brand-name {
+    font-style: italic;
+    font-weight: 800;
+    font-size: 1.35rem;
+    letter-spacing: .04em;
+    color: var(--brand-dark);
+}
+
+.brand-sub {
+    font-weight: 600;
+    font-size: .75rem;
+    letter-spacing: .35em;
+    color: var(--brand-blue);
+    text-align: right;
+    margin-top: 2px;
+}
+.navbar-nav .nav-link {
+    padding-left: .6rem;
+    padding-right: .6rem;
+    font-size: .95rem;
+    white-space: nowrap;
+}
+
+.navbar-text {
+    white-space: nowrap;
+}
+
+.navbar .btn {
+    white-space: nowrap;
+}

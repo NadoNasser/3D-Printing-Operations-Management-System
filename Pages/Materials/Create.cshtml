@@ -1,0 +1,20 @@
+@page
+@model PrintShop3D.Pages.Materials.CreateModel
+@{ ViewData["Title"] = "New Material"; }
+<h3>New Material</h3>
+<form method="post" asp-page="/Materials/Create" class="row g-3">
+    <div class="col-md-3"><label class="form-label">SKU</label><input asp-for="Material.SKU" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Material Type</label><input asp-for="Material.MaterialType" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Brand</label><input asp-for="Material.Brand" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Name</label><input asp-for="Material.MaterialName" class="form-control" /></div>
+    <div class="col-md-2"><label class="form-label">Color</label><input asp-for="Material.Color" class="form-control" /></div>
+    <div class="col-md-2"><label class="form-label">Unit</label><input asp-for="Material.Unit" class="form-control" /></div>
+    <div class="col-md-2"><label class="form-label">Purchase Price</label><input asp-for="Material.PurchasePrice" class="form-control" /></div>
+    <div class="col-md-2"><label class="form-label">Sale Price</label><input asp-for="Material.SalePrice" class="form-control" /></div>
+    <div class="col-md-2"><label class="form-label">Safety Stock</label><input asp-for="Material.SafetyStock" class="form-control" /></div>
+    <div class="col-md-2"><label class="form-label">Reorder Level</label><input asp-for="Material.ReorderLevel" class="form-control" /></div>
+    <div class="col-12">
+        <button class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+    </div>
+</form>

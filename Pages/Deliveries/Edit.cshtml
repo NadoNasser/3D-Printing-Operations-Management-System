@@ -1,0 +1,20 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.Deliveries.EditModel
+@{ ViewData["Title"] = "Update Delivery"; }
+<h3>Update Delivery - Order #@Model.Delivery.OrderId</h3>
+<form method="post" asp-page="/Deliveries/Edit" asp-route-id="@Model.Delivery.DeliveryId" class="row g-3">
+    <input type="hidden" asp-for="Delivery.DeliveryId" />
+    <input type="hidden" asp-for="Delivery.OrderId" />
+    <div class="col-md-3">
+        <label class="form-label">Status</label>
+        <select asp-for="Delivery.Status" class="form-select">
+            @foreach (var s in DomainConstants.DeliveryStatuses) { <option value="@s">@s</option> }
+        </select>
+    </div>
+    <div class="col-md-3"><label class="form-label">Tracking Number</label><input asp-for="Delivery.TrackingNumber" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Delivered Date</label><input asp-for="Delivery.DeliveredDate" type="datetime-local" class="form-control" /></div>
+    <div class="col-12">
+        <button class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" asp-page="/Orders/Details" asp-route-id="@Model.Delivery.OrderId">Cancel</a>
+    </div>
+</form>

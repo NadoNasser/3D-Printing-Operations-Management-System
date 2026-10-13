@@ -1,0 +1,57 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.PurchaseOrders.DetailsModel
+@{ ViewData["Title"] = "Purchase Order " + Model.Po.PONumber; }
+<h3>Purchase Order @Model.Po.PONumber</h3>
+<p>Supplier: <strong>@Model.Po.Supplier?.Name</strong> &middot; Status:
+    <form method="post" asp-page="/PurchaseOrders/Details" asp-route-id="@Model.Po.PurchaseOrderId" asp-page-handler="Status" class="d-inline">
+        <input type="hidden" name="id" value="@Model.Po.PurchaseOrderId" />
+        <select name="status" class="form-select form-select-sm d-inline w-auto">
+            @foreach (var s in DomainConstants.PurchaseOrderStatuses)
+            {
+                <option value="@s" selected="@(s == Model.Po.Status)">@s</option>
+            }
+        </select>
+        <button class="btn btn-sm btn-outline-primary">Update</button>
+    </form>
+</p>
+
+<table class="table bg-white">
+    <thead><tr><th>Material</th><th>Ordered</th><th>Received so far</th><th>Unit Cost</th><th>Line Total</th></tr></thead>
+    <tbody>
+    @foreach (var i in Model.Po.Items)
+    {
+        <tr>
+            <td>@i.Material?.MaterialName (@i.Material?.SKU)</td>
+            <td>@i.QuantityOrdered</td><td>@i.QuantityReceivedSoFar</td>
+            <td>@i.UnitCost.ToString("N2")</td><td>@i.LineTotal.ToString("N2")</td>
+        </tr>
+    }
+    </tbody>
+    <tfoot><tr><th colspan="4" class="text-end">Total</th><th>@Model.Po.TotalAmount.ToString("N2")</th></tr></tfoot>
+</table>
+
+<hr />
+<h5>Record Goods Receipt</h5>
+<form method="post" asp-page="/PurchaseOrders/Details" asp-route-id="@Model.Po.PurchaseOrderId" asp-page-handler="Receive">
+    <input type="hidden" name="PurchaseOrderId" value="@Model.Po.PurchaseOrderId" />
+    <table class="table bg-white">
+        <thead><tr><th>Material</th><th>Remaining</th><th>Quantity Received Now</th><th>Unit Cost</th></tr></thead>
+        <tbody>
+        @for (int i = 0; i < Model.Po.Items.Count; i++)
+        {
+            var item = Model.Po.Items[i];
+            var remaining = item.QuantityOrdered - item.QuantityReceivedSoFar;
+            <tr>
+                <td>@item.Material?.MaterialName</td>
+                <td>@remaining</td>
+                <td><input type="hidden" name="Lines[@i].PurchaseItemId" value="@item.PurchaseItemId" />
+                    <input name="Lines[@i].QuantityReceived" class="form-control" placeholder="0" /></td>
+                <td><input name="Lines[@i].UnitCost" class="form-control" value="@item.UnitCost" /></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <p class="text-muted">Recording a receipt automatically increases stock via the database trigger on GOODS_RECEIPT_ITEMS.</p>
+    <button class="btn btn-primary">Record Receipt</button>
+    <a class="btn btn-secondary" asp-page="Index">Back</a>
+</form>

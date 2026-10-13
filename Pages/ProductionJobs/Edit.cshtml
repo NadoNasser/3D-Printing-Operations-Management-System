@@ -1,0 +1,73 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.ProductionJobs.EditModel
+@{ ViewData["Title"] = "Manage Job #" + Model.Job.JobId; }
+<h3>Job #@Model.Job.JobId - @(Model.Job.OrderItem?.Product?.Name ?? Model.Job.OrderItem?.Service?.Name)</h3>
+<div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+    <span class="badge @WorkflowRules.StatusBadgeClass(Model.Job.Status)">@Model.Job.Status</span>
+    <span class="badge @(Model.Job.Priority == 4 ? "bg-danger" : Model.Job.Priority == 3 ? "bg-warning text-dark" : Model.Job.Priority == 2 ? "bg-primary" : "bg-secondary")">
+        Priority: @(Model.Job.Priority == 4 ? "URGENT" : Model.Job.Priority == 3 ? "HIGH" : Model.Job.Priority == 2 ? "NORMAL" : "LOW")
+    </span>
+    @if (DateTime.Now - Model.Job.LastUpdatedAt >= TimeSpan.FromHours(24) && Model.Job.Status is not ("COMPLETED" or "FAILED"))
+    {
+        <span class="badge bg-danger">24h+ without update</span>
+    }
+    <span class="small text-muted">Last updated: @Model.Job.LastUpdatedAt.ToString("dd MMM yyyy HH:mm")</span>
+</div>
+<div class="card mb-3 border-0 shadow-sm">
+    <div class="card-body">
+        <form method="post" asp-page-handler="Priority" asp-route-id="@Model.Job.JobId" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Production Priority</label>
+                <select name="priority" class="form-select">
+                    @if (Model.Job.Priority == 1) { <option value="1" selected>LOW</option> } else { <option value="1">LOW</option> }
+                    @if (Model.Job.Priority == 2) { <option value="2" selected>NORMAL</option> } else { <option value="2">NORMAL</option> }
+                    @if (Model.Job.Priority == 3) { <option value="3" selected>HIGH</option> } else { <option value="3">HIGH</option> }
+                    @if (Model.Job.Priority == 4) { <option value="4" selected>URGENT</option> } else { <option value="4">URGENT</option> }
+                </select>
+            </div>
+            <div class="col-md-auto"><button class="btn btn-outline-primary">Update Priority</button></div>
+            <div class="col-12"><div class="form-text">Jobs with no meaningful update for 24 hours automatically receive a one-level priority boost in the production queue.</div></div>
+        </form>
+    </div>
+</div>
+<form method="post" asp-page-handler="Status" asp-route-id="@Model.Job.JobId" class="mb-3">
+    <input type="hidden" name="id" value="@Model.Job.JobId" />
+    <label class="form-label">Change status</label>
+    <select name="status" class="form-select form-select-sm d-inline w-auto">
+        @foreach (var s in Model.AllowedStatuses)
+        {
+            if (s == Model.Job.Status)
+            {
+                <option value="@s" selected>@s</option>
+            }
+            else
+            {
+                <option value="@s">@s</option>
+            }
+        }
+    </select>
+    <button class="btn btn-sm btn-outline-primary">Update Status</button>
+</form>
+<div class="row">
+    <div class="col-md-6"><div class="card mb-3"><div class="card-header">Assign Printer</div><div class="card-body">
+        @if (!Model.AvailablePrinters.Any()) { <div class="alert alert-warning">No printers are currently available. Check printer status or schedule.</div> }
+        <form method="post" asp-page-handler="AssignPrinter" asp-route-id="@Model.Job.JobId">
+            <input type="hidden" name="jobId" value="@Model.Job.JobId" />
+            <select name="printerId" class="form-select mb-2" required><option value="">Choose printer...</option>@foreach (var p in Model.AvailablePrinters) { <option value="@p.PrinterId">@p.PrinterCode - @p.Brand @p.Model</option> }</select>
+            <div class="row g-2"><div class="col-6"><label class="form-label">Start</label><input type="datetime-local" name="start" class="form-control" required /></div><div class="col-6"><label class="form-label">End</label><input type="datetime-local" name="end" class="form-control" required /></div></div>
+            <button class="btn btn-sm btn-primary mt-2" @(Model.AvailablePrinters.Any() ? null : "disabled")>Assign Printer</button>
+        </form>
+        <ul class="list-group mt-2">@foreach (var pa in Model.Job.PrinterAssignments.OrderByDescending(a => a.AssignedStart)) { <li class="list-group-item d-flex justify-content-between"><span>@pa.Printer?.PrinterCode: @pa.AssignedStart.ToString("g") → @pa.AssignedEnd.ToString("g")</span><span class="badge @WorkflowRules.StatusBadgeClass(pa.Status)">@pa.Status</span></li> }</ul>
+    </div></div></div>
+    <div class="col-md-6"><div class="card mb-3"><div class="card-header">Assign Employee</div><div class="card-body">
+        <form method="post" asp-page-handler="AssignEmployee" asp-route-id="@Model.Job.JobId">
+            <input type="hidden" name="jobId" value="@Model.Job.JobId" />
+            <select name="employeeId" class="form-select mb-2" required><option value="">Choose employee...</option>@foreach (var e in Model.ActiveEmployees) { <option value="@e.EmployeeId">@e.FullName (@e.PrimaryRole)</option> }</select>
+            <div class="form-text mb-2">Only ACTIVE employees are listed; overlapping active assignments are rejected.</div>
+            <div class="row g-2"><div class="col-6"><label class="form-label">Start</label><input type="datetime-local" name="start" class="form-control" required /></div><div class="col-6"><label class="form-label">End</label><input type="datetime-local" name="end" class="form-control" required /></div></div>
+            <button class="btn btn-sm btn-primary mt-2">Assign Employee</button>
+        </form>
+        <ul class="list-group mt-2">@foreach (var ja in Model.Job.JobAssignments.OrderByDescending(a => a.AssignedStart)) { <li class="list-group-item d-flex justify-content-between"><span>@ja.Employee?.FullName: @ja.AssignedStart.ToString("g") → @ja.AssignedEnd.ToString("g")</span><span class="badge @WorkflowRules.StatusBadgeClass(ja.Status)">@ja.Status</span></li> }</ul>
+    </div></div></div>
+</div>
+<a class="btn btn-secondary" asp-page="Index">Back to list</a>

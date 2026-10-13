@@ -1,0 +1,129 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.Orders.EditModel
+@using System.Globalization
+@{ ViewData["Title"] = "Edit Order #" + Model.Order.OrderId; }
+<h3>Edit Order #@Model.Order.OrderId <span class="badge text-bg-secondary">DRAFT</span></h3>
+<p class="text-muted">Orders can only be edited while they are DRAFT. Items whose production has already started are locked.</p>
+
+<form method="post" asp-page="Edit" asp-route-id="@Model.Order.OrderId" id="orderEditForm" enctype="multipart/form-data">
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <partial name="_CustomerPicker" model="@(new CustomerPickerModel(Model.CustomersList, Model.CustomerId))" />
+        </div>
+    </div>
+
+    <h5>Current items</h5>
+    <div class="table-responsive">
+    <table class="table bg-white align-middle">
+        <thead><tr><th>Item</th><th style="width:110px">Qty</th><th style="width:140px">Unit price</th><th style="width:120px" class="text-end">Line total</th><th>Production job</th><th style="width:80px">Remove</th></tr></thead>
+        <tbody>
+        @for (int i = 0; i < Model.Order.Items.Count; i++)
+        {
+            var item = Model.Order.Items[i];
+            var locked = Model.IsLocked(item);
+            var inp = Model.Existing[i];
+            var qty = locked ? item.Quantity : inp.Quantity;
+            var price = locked ? item.UnitPrice : inp.UnitPrice;
+            var priceReadonly = locked || !Model.CanEditPrice(item);
+            <tr class="existing-row">
+                <td>
+                    <input type="hidden" name="Existing[@i].OrderItemId" value="@item.OrderItemId" />
+                    <div class="fw-semibold">@(item.Product?.Name ?? item.Service?.Name)</div>
+                    @foreach (var f in item.Files.OrderByDescending(f => f.FileVersion))
+                    {
+                        <div class="small text-muted"><i class="bi bi-file-earmark"></i> @f.FileName@f.FileExtension <span>v@f.FileVersion</span></div>
+                    }
+                    @if (locked) { <span class="badge text-bg-warning">Production started - locked</span> }
+                    <div><a class="small" asp-page="/Files/Index" asp-route-orderItemId="@item.OrderItemId">Manage files</a></div>
+                </td>
+                <td><input name="Existing[@i].Quantity" value="@qty" class="form-control form-control-sm ex-qty" readonly="@locked" /></td>
+                <td><input name="Existing[@i].UnitPrice" value="@price.ToString(CultureInfo.InvariantCulture)" class="form-control form-control-sm ex-price" readonly="@priceReadonly" /></td>
+                <td class="text-end fw-semibold ex-total">@((qty * price).ToString("N2"))</td>
+                <td>
+                    @if (item.ProductionJobs.Any())
+                    {
+                        <span class="small">@item.ProductionJobs.Count job(s): @string.Join(", ", item.ProductionJobs.Select(j => j.Status))</span>
+                    }
+                    else if (!locked && Model.IsPrintingItem(item))
+                    {
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="Existing[@i].CreateJob" value="true" id="ejob-@i" />
+                            <label class="form-check-label small" for="ejob-@i">Create job</label>
+                        </div>
+                        <div class="d-flex gap-1 mt-1">
+                            <select name="Existing[@i].Priority" class="form-select form-select-sm">
+                                <option value="1">LOW</option><option value="2" selected>NORMAL</option><option value="3">HIGH</option><option value="4">URGENT</option>
+                            </select>
+                            <input name="Existing[@i].EstimatedHours" value="1" class="form-control form-control-sm" title="Estimated hours" style="max-width:70px" />
+                        </div>
+                    }
+                    else { <span class="text-muted small">-</span> }
+                </td>
+                <td>
+                    @if (!locked)
+                    {
+                        <input class="form-check-input ex-remove" type="checkbox" name="Existing[@i].Remove" value="true" title="Remove this item" />
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+    <div class="form-text mb-4">Removing an item also deletes its print files and its (not yet started) production jobs.</div>
+
+    <h5>Add new lines</h5>
+    <div id="items"></div>
+    <button type="button" id="addLineBtn" class="btn btn-outline-secondary btn-sm mb-3">+ Add line</button>
+
+    <div class="card mb-3 border-0 shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">Order total after changes</span>
+            <span class="fs-4 fw-bold" id="grandTotal">0.00</span>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <a class="btn btn-secondary" asp-page="Details" asp-route-id="@Model.Order.OrderId">Cancel</a>
+    </div>
+</form>
+
+<partial name="_LineTemplate" model="@(new LineTemplateModel(Model.ProductsList, Model.ServicesList))" />
+
+@section Scripts {
+<script src="~/js/order-form.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = Array.from(document.querySelectorAll('.existing-row'));
+
+        function existingTotal() {
+            let total = 0;
+            rows.forEach(r => {
+                const removeBox = r.querySelector('.ex-remove');
+                const removed = !!removeBox && removeBox.checked;
+                const lineTotal = Math.max(0, parseInt(r.querySelector('.ex-qty').value) || 0) * OrderForm.num(r.querySelector('.ex-price').value);
+                r.querySelector('.ex-total').textContent = OrderForm.fmt(lineTotal);
+                r.classList.toggle('table-danger', removed);
+                r.classList.toggle('opacity-50', removed);
+                if (!removed) total += lineTotal;
+            });
+            return total;
+        }
+
+        const customer = OrderForm.initCustomer();
+        const lines = OrderForm.initLines({
+            canSetFilePrice: @(Model.CanSetFilePrice ? "true" : "false"),
+            canOverridePrice: @(Model.CanOverridePrice ? "true" : "false"),
+            initialLines: [],
+            getBaseTotal: existingTotal
+        });
+        rows.forEach(r => {
+            r.addEventListener('input', lines.recalc);
+            r.addEventListener('change', lines.recalc);
+        });
+        lines.recalc();
+        OrderForm.attachSubmit(document.getElementById('orderEditForm'), customer, lines);
+    });
+</script>
+}

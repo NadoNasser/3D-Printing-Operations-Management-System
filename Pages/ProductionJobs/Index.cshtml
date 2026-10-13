@@ -1,0 +1,206 @@
+@page
+@model PrintShop3D.Pages.ProductionJobs.IndexModel
+@{ ViewData["Title"] = "Production Jobs"; }
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="mb-1">@(Model.OrderId.HasValue ? $"Production Jobs for Order #{Model.OrderId.Value}" : "Production Jobs")</h3>
+        <div class="text-muted">@(Model.OrderId.HasValue ? "Only production jobs belonging to this order are shown." : "Monitor production, customer orders, printers, and job status in one place.")</div>
+    </div>
+    @if (Model.OrderId.HasValue)
+    {
+        <a class="btn btn-outline-secondary" asp-page="/Orders/Details" asp-route-id="@Model.OrderId.Value">
+            <i class="bi bi-arrow-left me-1"></i> Back to Order
+        </a>
+    }
+</div>
+
+@if (!Model.Jobs.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <div class="display-6 text-muted mb-2"><i class="bi bi-printer"></i></div>
+            <h5>No production jobs found</h5>
+            <p class="text-muted mb-0">No production jobs are currently linked to this order.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body border-bottom">
+            <div class="row g-2">
+                <div class="col-lg-5">
+                    <label for="jobSearch" class="form-label small fw-semibold">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input id="jobSearch" class="form-control" type="search"
+                               placeholder="Search job, customer, order, product, file or printer..." autocomplete="off" />
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <label for="statusFilter" class="form-label small fw-semibold">Status</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All statuses</option>
+                        @foreach (var status in Model.Jobs.Select(j => j.Status).Distinct().OrderBy(s => s))
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label for="priorityFilter" class="form-label small fw-semibold">Priority</label>
+                    <select id="priorityFilter" class="form-select">
+                        <option value="">All priorities</option>
+                        <option value="URGENT">URGENT</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="NORMAL">NORMAL</option>
+                        <option value="LOW">LOW</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2 d-flex align-items-end">
+                    <div class="small text-muted pb-2" id="resultCount">@Model.Jobs.Count job(s)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="productionJobsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Job</th>
+                        <th>Priority</th>
+                        <th>Customer / Order</th>
+                        <th>Product / File</th>
+                        <th>Qty</th>
+                        <th>Printer</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var j in Model.Jobs)
+                {
+                    var orderId = j.OrderItem?.OrderId ?? 0;
+                    var order = orderId > 0 && Model.Orders.TryGetValue(orderId, out var orderSummary) ? orderSummary : null;
+                    var jobName = Model.JobName(j);
+                    var fileName = Model.FileName(j);
+                    var printer = Model.PrinterName(j);
+                    var employee = Model.EmployeeName(j);
+                    var searchText = $"JOB-{j.JobId} {j.JobId} {order?.CustomerName} {order?.CustomerCode} {orderId} {jobName} {fileName} {printer} {employee}";
+                    <tr class="production-job-row"
+                        data-search="@searchText"
+                        data-status="@j.Status"
+                        data-priority="@Model.PriorityLabel(Model.EffectivePriority(j))">
+                        <td class="ps-3">
+                            <div class="fw-semibold">JOB-@j.JobId.ToString("D4")</div>
+                            <div class="small text-muted">#@j.JobId</div>
+                        </td>
+                        <td>
+                            <span class="badge @Model.PriorityBadgeClass(Model.EffectivePriority(j))">@Model.PriorityLabel(Model.EffectivePriority(j))</span>
+                            @if (Model.IsStale(j))
+                            {
+                                <div class="small text-danger fw-semibold mt-1"><i class="bi bi-arrow-up-circle me-1"></i>24h+ boost</div>
+                            }
+                            else
+                            {
+                                <div class="small text-muted mt-1">@j.LastUpdatedAt.ToString("dd MMM HH:mm")</div>
+                            }
+                        </td>
+                        <td>
+                            @if (order is not null)
+                            {
+                                <div class="fw-semibold">@order.CustomerName</div>
+                                <a class="small text-decoration-none" asp-page="/Orders/Details" asp-route-id="@order.OrderId">
+                                    Order #@order.OrderId
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="text-muted">Customer unavailable</div>
+                                <span class="small text-muted">Order #@orderId</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="fw-semibold">@jobName</div>
+                            <div class="small text-muted text-truncate" style="max-width: 230px;" title="@fileName">
+                                <i class="bi bi-file-earmark me-1"></i>@fileName
+                            </div>
+                        </td>
+                        <td><span class="fw-semibold">@j.Quantity</span> <span class="text-muted">pcs</span></td>
+                        <td>
+                            <div>@printer</div>
+                            @if (employee != "Not assigned")
+                            {
+                                <div class="small text-muted">@employee</div>
+                            }
+                        </td>
+                        <td><span class="badge @Model.BadgeClass(j.Status)">@j.Status</span></td>
+                        <td>
+                            @if (order is not null)
+                            {
+                                <div>@order.CreatedAt.ToString("dd MMM yyyy")</div>
+                                <div class="small text-muted">@order.CreatedAt.ToString("HH:mm")</div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-end pe-3">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="Edit" asp-route-id="@j.JobId">
+                                Manage
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div id="noFilteredResults" class="text-center py-5 d-none">
+            <div class="text-muted mb-2"><i class="bi bi-search fs-3"></i></div>
+            <h6>No matching production jobs</h6>
+            <p class="small text-muted mb-0">Try a different customer, order number, product, file, or status.</p>
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const search = document.getElementById('jobSearch');
+        const status = document.getElementById('statusFilter');
+        const priority = document.getElementById('priorityFilter');
+        const rows = Array.from(document.querySelectorAll('.production-job-row'));
+        const count = document.getElementById('resultCount');
+        const empty = document.getElementById('noFilteredResults');
+
+        if (!search || !status || !priority) return;
+
+        function applyFilters() {
+            const term = search.value.trim().toLowerCase();
+            const selectedStatus = status.value.toLowerCase();
+            const selectedPriority = priority.value.toLowerCase();
+            let visible = 0;
+
+            rows.forEach(row => {
+                const matchesSearch = !term || (row.dataset.search || '').toLowerCase().includes(term);
+                const matchesStatus = !selectedStatus || (row.dataset.status || '').toLowerCase() === selectedStatus;
+                const matchesPriority = !selectedPriority || (row.dataset.priority || '').toLowerCase() === selectedPriority;
+                const show = matchesSearch && matchesStatus && matchesPriority;
+                row.classList.toggle('d-none', !show);
+                if (show) visible++;
+            });
+
+            count.textContent = `${visible} job(s)`;
+            empty.classList.toggle('d-none', visible !== 0);
+        }
+
+        search.addEventListener('input', applyFilters);
+        status.addEventListener('change', applyFilters);
+        priority.addEventListener('change', applyFilters);
+    });
+</script>
+}

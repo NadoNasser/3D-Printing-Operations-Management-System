@@ -1,0 +1,23 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.Employees.EditModel
+@{ ViewData["Title"] = "Edit Employee"; }
+<h3>Edit Employee</h3>
+<form method="post" asp-page="/Employees/Edit" asp-route-id="@Model.Employee.EmployeeId" class="row g-3">
+    <input type="hidden" asp-for="Employee.EmployeeId" />
+    <div class="col-md-3"><label class="form-label">Employee Code</label><input asp-for="Employee.EmployeeCode" class="form-control" /></div>
+    <div class="col-md-4"><label class="form-label">Full Name</label><input asp-for="Employee.FullName" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Primary Role</label><input asp-for="Employee.PrimaryRole" class="form-control" /></div>
+    <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select asp-for="Employee.Status" class="form-select">
+            @foreach (var s in DomainConstants.EmployeeStatuses) { <option value="@s">@s</option> }
+        </select>
+    </div>
+    <div class="col-md-3"><label class="form-label">Phone</label><input asp-for="Employee.Phone" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Email</label><input asp-for="Employee.Email" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Hourly Rate</label><input asp-for="Employee.HourlyRate" class="form-control" /></div>
+    <div class="col-12">
+        <button class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+    </div>
+</form>

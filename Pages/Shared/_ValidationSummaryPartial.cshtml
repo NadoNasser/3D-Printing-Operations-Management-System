@@ -1,0 +1,11 @@
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach (var entry in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@entry.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}

@@ -1,0 +1,74 @@
+@model PrintShop3D.Pages.Orders.LineTemplateModel
+@using PrintShop3D.Common
+@using PrintShop3D.Models
+@using System.Globalization
+<template id="lineTemplate">
+    <div class="card mb-3 order-line">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Item</label>
+                    <select name="Items[0].ItemId" class="form-select line-item">
+                        <optgroup label="Products">
+                            @foreach (var p in Model.Products)
+                            {
+                                <option value="p@(p.ProductId)" data-price="@p.BasePrice.ToString(CultureInfo.InvariantCulture)" data-printing="false">@p.Name (@p.BasePrice.ToString("N2"))</option>
+                            }
+                        </optgroup>
+                        <optgroup label="Services">
+                            @foreach (var s in Model.Services)
+                            {
+                                var printing = ServiceRules.IsPrintingService(s);
+                                <option value="s@(s.ServiceId)" data-price="@s.BaseRate.ToString(CultureInfo.InvariantCulture)" data-printing="@(printing ? "true" : "false")">@s.Name (@s.BaseRate.ToString("N2"))@(printing ? " 🖨" : "")</option>
+                            }
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="col-md-2 plain-fields"><label class="form-label">Quantity</label><input name="Items[0].Quantity" value="1" class="form-control line-qty" /></div>
+                <div class="col-md-2 plain-fields"><label class="form-label">Unit price</label><input name="Items[0].UnitPrice" value="0" class="form-control line-price" /></div>
+                <div class="col-md-2 ms-auto text-end"><div class="small text-muted">Line total</div><div class="fw-semibold line-total">0.00</div></div>
+                <div class="col-auto"><button type="button" class="btn btn-sm btn-outline-danger remove-line" title="Remove line">&times;</button></div>
+            </div>
+
+            <div class="print-panel d-none mt-3 pt-3 border-top">
+                <div class="row g-2 align-items-end mb-2">
+                    <div class="col-md-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input line-createjob" type="checkbox" name="Items[0].CreateJob" value="true" checked id="job-__uid__" />
+                            <label class="form-check-label fw-semibold" for="job-__uid__">Create production job(s)</label>
+                        </div>
+                        <div class="form-text">One QUEUED job per print file.</div>
+                    </div>
+                    <div class="col-md-2 job-field">
+                        <label class="form-label small">Job priority</label>
+                        <select name="Items[0].Priority" class="form-select form-select-sm">
+                            <option value="1">LOW</option>
+                            <option value="2" selected>NORMAL</option>
+                            <option value="3">HIGH</option>
+                            <option value="4">URGENT</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 job-field nofile-only">
+                        <label class="form-label small">Estimated hours</label>
+                        <input name="Items[0].EstimatedHours" value="1" class="form-control form-control-sm" />
+                    </div>
+                </div>
+
+                <label class="form-label small fw-semibold">Print files (.stl, .3mf, .obj, .step, .stp - max 100 MB each, 300 MB total)</label>
+                <input type="file" class="form-control form-control-sm line-picker mb-2" multiple accept=".stl,.3mf,.obj,.step,.stp" />
+
+                <div class="file-table d-none">
+                    <div class="row g-2 small text-muted fw-semibold mb-1">
+                        <div class="col-md-4">File</div>
+                        <div class="col-md-2">Qty (copies)</div>
+                        <div class="col-md-2">Price per copy</div>
+                        <div class="col-md-2 job-field-head">Est. hours</div>
+                        <div class="col-md-1 text-end">Total</div>
+                        <div class="col-md-1"></div>
+                    </div>
+                    <div class="file-rows"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,42 @@
+@page
+@model PrintShop3D.Pages.Files.IndexModel
+@{ ViewData["Title"] = "Files"; }
+<h3>Design Files - @Model.ItemLabel (Order #@Model.OrderId)</h3>
+<a class="btn btn-primary mb-3" asp-page="Create" asp-route-orderItemId="@Model.OrderItemId">+ Add Design File(s)</a>
+@if (!Model.FilesList.Any())
+{
+    <div class="alert alert-info">No design files have been registered for this order item.</div>
+}
+else
+{
+<table class="table bg-white">
+    <thead><tr><th>File</th><th>Version</th><th>Current</th><th>Size</th><th>Uploaded</th><th>By</th><th>Location</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var f in Model.FilesList)
+    {
+        <tr class="@(f.IsCurrent ? "table-success" : "")">
+            <td>@f.FileName@f.FileExtension</td>
+            <td>v@f.FileVersion</td>
+            <td>@(f.IsCurrent ? "Current" : "")</td>
+            <td>@(f.FileSizeBytes.HasValue ? $"{f.FileSizeBytes.Value / 1024.0:N0} KB" : "")</td>
+            <td>@f.UploadedAt.ToString("g")</td>
+            <td>@f.UploadedByEmployee?.FullName</td>
+            <td>
+                @if (f.FilePath.StartsWith("/app-data/print-files/", StringComparison.OrdinalIgnoreCase))
+                {
+                    <a asp-page-handler="Download" asp-route-fileId="@f.FileId" asp-route-orderItemId="@Model.OrderItemId">Download</a>
+                }
+                else
+                {
+                    <code>@f.FilePath</code>
+                }
+            </td>
+            <td>
+                <a class="btn btn-sm btn-outline-primary" asp-page="Edit" asp-route-fileId="@f.FileId">Edit</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+}
+<a class="btn btn-secondary" asp-page="/Orders/Details" asp-route-id="@Model.OrderId">Back to Order</a>

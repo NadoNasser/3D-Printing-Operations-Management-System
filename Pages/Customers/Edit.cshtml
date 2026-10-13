@@ -1,0 +1,50 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.Customers.EditModel
+@{ ViewData["Title"] = "Edit Customer"; }
+<h3>Edit Customer</h3>
+<form method="post" asp-page="/Customers/Edit" asp-route-id="@Model.Customer.CustomerId" class="row g-3">
+    <input type="hidden" asp-for="Customer.CustomerId" />
+    <div class="col-md-4">
+    <label class="form-label">Customer Code</label>
+    <input asp-for="Customer.CustomerCode" class="form-control" readonly />
+</div>
+    <div class="col-md-4"><label class="form-label">Name</label><input asp-for="Customer.Name" class="form-control" /></div>
+    <div class="col-md-4"><label class="form-label">Phone</label><input asp-for="Customer.Phone" class="form-control" /></div>
+    <div class="col-md-4"><label class="form-label">Email</label><input asp-for="Customer.Email" class="form-control" /></div>
+    <div class="col-md-4"><label class="form-label">Company</label><input asp-for="Customer.Company" class="form-control" /></div>
+    <div class="col-md-12"><label class="form-label">Notes</label><textarea asp-for="Customer.Notes" class="form-control"></textarea></div>
+    <div class="col-md-3">
+        <div class="form-check form-switch mt-2">
+            <input asp-for="Customer.IsBlacklisted" class="form-check-input" id="blacklistSwitch" />
+            <label class="form-check-label text-danger fw-semibold" for="blacklistSwitch">Blacklisted customer</label>
+        </div>
+    </div>
+    <div class="col-md-9"><label class="form-label">Blacklist reason</label><input asp-for="Customer.BlacklistReason" class="form-control" maxlength="500" placeholder="Optional reason" /></div>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <a class="btn btn-secondary" asp-page="Index">Back to list</a>
+    </div>
+</form>
+
+<hr class="my-4" />
+<h5>Addresses</h5>
+<table class="table bg-white">
+    <thead><tr><th>Label</th><th>Address</th><th>City</th><th>Default</th></tr></thead>
+    <tbody>
+    @foreach (var a in Model.Customer.Addresses)
+    {
+        <tr><td>@a.Label</td><td>@a.AddressLine</td><td>@a.City</td><td>@(a.IsDefault ? "Yes" : "")</td></tr>
+    }
+    </tbody>
+</table>
+<form method="post" asp-page="/Customers/Edit" asp-route-id="@Model.Customer.CustomerId" asp-page-handler="AddAddress" class="row g-2">
+    <input type="hidden" name="CustomerId" value="@Model.Customer.CustomerId" />
+    <div class="col-md-2"><input class="form-control" name="Label" placeholder="Label (Home/Work)" /></div>
+    <div class="col-md-4"><input class="form-control" name="AddressLine" placeholder="Address line" /></div>
+    <div class="col-md-2"><input class="form-control" name="City" placeholder="City" /></div>
+    <div class="col-md-2 form-check mt-2">
+        <input class="form-check-input" type="checkbox" name="IsDefault" value="true" />
+        <label class="form-check-label">Default</label>
+    </div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100">+ Add address</button></div>
+</form>

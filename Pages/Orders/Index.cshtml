@@ -1,0 +1,20 @@
+@page
+@model PrintShop3D.Pages.Orders.IndexModel
+@using PrintShop3D.Common
+@{ ViewData["Title"] = "Orders"; }
+<div class="d-flex justify-content-between align-items-center mb-3"><h3>Orders</h3><a class="btn btn-primary" asp-page="Create">+ New Order</a></div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5"><input name="search" value="@Model.Search" class="form-control" placeholder="Search customer or order #" /></div>
+    <div class="col-md-3"><select name="statusFilter" class="form-select"><option value="">All statuses</option>@foreach (var s in DomainConstants.OrderStatuses) { <option value="@s" selected="@(Model.StatusFilter == s )">@s</option> }</select></div>
+    <div class="col-auto"><button class="btn btn-outline-primary">Filter</button><a class="btn btn-outline-secondary" asp-page="Index">Clear</a></div>
+</form>
+@if (!Model.OrdersList.Any()) { <div class="alert alert-info">No orders match the selected filters.</div> }
+else
+{
+<table class="table bg-white align-middle"><thead><tr><th>#</th><th>Customer</th><th>Created</th><th>Status</th><th>Total</th><th>Balance</th><th></th></tr></thead><tbody>
+@foreach (var o in Model.OrdersList)
+{
+    <tr><td>@o.OrderId</td><td>@o.Customer?.Name</td><td>@o.CreatedAt.ToString("g")</td><td><span class="badge @WorkflowRules.StatusBadgeClass(o.Status)">@o.Status</span></td><td>@o.TotalAmount.ToString("N2")</td><td class="@(o.Balance > 0 ? "text-danger fw-semibold" : "text-success")">@o.Balance.ToString("N2")</td><td><a class="btn btn-sm btn-outline-primary" asp-page="Details" asp-route-id="@o.OrderId">Open</a></td></tr>
+}
+</tbody></table>
+}

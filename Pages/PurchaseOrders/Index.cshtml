@@ -1,0 +1,21 @@
+@page
+@model PrintShop3D.Pages.PurchaseOrders.IndexModel
+@{ ViewData["Title"] = "Purchasing"; }
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Purchase Orders</h3>
+    <a class="btn btn-primary" asp-page="Create">+ New Purchase Order</a>
+</div>
+<table class="table bg-white">
+    <thead><tr><th>PO Number</th><th>Supplier</th><th>Order Date</th><th>Status</th><th>Total</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var po in Model.Orders)
+    {
+        <tr>
+            <td>@po.PONumber</td><td>@po.Supplier?.Name</td><td>@po.OrderDate.ToShortDateString()</td>
+            <td><span class="badge text-bg-secondary">@po.Status</span></td>
+            <td>@po.TotalAmount.ToString("N2")</td>
+            <td><a class="btn btn-sm btn-outline-primary" asp-page="Details" asp-route-id="@po.PurchaseOrderId">Open</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

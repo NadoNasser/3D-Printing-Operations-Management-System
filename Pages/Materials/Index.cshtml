@@ -1,0 +1,12 @@
+@page
+@model PrintShop3D.Pages.Materials.IndexModel
+@{ ViewData["Title"] = "Inventory"; }
+<div class="d-flex justify-content-between align-items-center mb-3"><h3>Materials &amp; Inventory</h3><a class="btn btn-primary" asp-page="Create">+ New Material</a></div>
+<form method="get" class="row g-2 mb-3"><div class="col-md-5"><input name="search" value="@Model.Search" class="form-control" placeholder="Search SKU or material" /></div><div class="col-md-3 form-check mt-2"><input name="lowOnly" value="true" type="checkbox" class="form-check-input" id="lowOnly" @(Model.LowOnly ? "checked" : null) /><label class="form-check-label" for="lowOnly">Low stock only</label></div><div class="col-auto"><button class="btn btn-outline-primary">Filter</button><a class="btn btn-outline-secondary" asp-page="Index">Clear</a></div></form>
+@if (!Model.Stock.Any()) { <div class="alert alert-info">No materials match the selected filters.</div> }
+else
+{
+<table class="table bg-white"><thead><tr><th>SKU</th><th>Material</th><th>Current Stock</th><th>Safety Stock</th><th>Reorder Level</th><th></th></tr></thead><tbody>
+@foreach (var m in Model.Stock) { <tr class="@(m.IsLowStock ? "table-warning" : "")"><td>@m.SKU</td><td>@m.MaterialName</td><td>@m.CurrentStockLevel @m.Unit</td><td>@m.SafetyStock @m.Unit</td><td>@m.ReorderLevel @m.Unit</td><td><a class="btn btn-sm btn-outline-primary" asp-page="Adjust" asp-route-id="@m.MaterialId">Adjust</a></td></tr> }
+</tbody></table>
+}

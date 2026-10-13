@@ -1,0 +1,26 @@
+@page
+@model PrintShop3D.Pages.Deliveries.CreateModel
+@{ ViewData["Title"] = "Set up Delivery"; }
+<h3>Set up Delivery - Order #@Model.OrderId</h3>
+<form method="post" asp-page="/Deliveries/Create" class="row g-3">
+    <input type="hidden" asp-for="OrderId" />
+    <div class="col-md-3">
+        <label class="form-label">Method</label>
+        <select asp-for="Delivery.Method" class="form-select">
+            @foreach (var m in DomainConstants.DeliveryMethods) { <option value="@m">@m</option> }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Address (leave blank for PICKUP)</label>
+        <select asp-for="Delivery.AddressId" class="form-select">
+            <option value="">-- none / pickup --</option>
+            @foreach (var a in Model.Addresses) { <option value="@a.AddressId">@a.Label - @a.AddressLine, @a.City</option> }
+        </select>
+    </div>
+    <div class="col-md-3"><label class="form-label">Carrier</label><input asp-for="Delivery.Carrier" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label">Scheduled Date</label><input asp-for="Delivery.ScheduledDate" type="datetime-local" class="form-control" /></div>
+    <div class="col-12">
+        <button class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" asp-page="/Orders/Details" asp-route-id="@Model.OrderId">Cancel</a>
+    </div>
+</form>

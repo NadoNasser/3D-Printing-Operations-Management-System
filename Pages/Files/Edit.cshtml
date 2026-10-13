@@ -1,0 +1,62 @@
+@page "{fileId:int}"
+@model PrintShop3D.Pages.Files.EditModel
+@{ ViewData["Title"] = "Edit Print File"; }
+
+<h3>Edit Print File - @Model.ItemLabel</h3>
+<p class="text-muted">Order #@Model.OrderId · File #@Model.FileId</p>
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<form method="post" enctype="multipart/form-data" class="row g-3">
+    <input type="hidden" asp-for="FileId" />
+    <input type="hidden" asp-for="OrderItemId" />
+
+    <div class="col-md-6">
+        <label asp-for="FileName" class="form-label">File Name</label>
+        <input asp-for="FileName" class="form-control" />
+        <div class="form-text">The extension is managed separately.</div>
+        <span asp-validation-for="FileName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="FileExtension" class="form-label">Extension</label>
+        <input asp-for="FileExtension" class="form-control" placeholder=".stl" />
+        <span asp-validation-for="FileExtension" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end">
+        <div class="form-check mb-2">
+            <input asp-for="IsCurrent" class="form-check-input" />
+            <label asp-for="IsCurrent" class="form-check-label">Mark as current file</label>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="ReplacementFile" class="form-label">Replace uploaded file (optional)</label>
+        <input asp-for="ReplacementFile" type="file" class="form-control" accept=".stl,.3mf,.obj,.step,.stp" />
+        <div class="form-text">Leave empty to keep the existing file. Maximum 100 MB.</div>
+        <span asp-validation-for="ReplacementFile" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="ExternalFilePath" class="form-label">External file path (optional)</label>
+        <input asp-for="ExternalFilePath" class="form-control" placeholder="\\server\share\designs\..." />
+        <div class="form-text">Use this instead of a replacement upload for a shared-drive/NAS file.</div>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="Notes" class="form-label">Notes</label>
+        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="col-12">
+        <div class="alert alert-light border">
+            <strong>Current location:</strong> <code>@Model.ExistingLocation</code>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-primary">Save Changes</button>
+        <a class="btn btn-secondary" asp-page="Index" asp-route-orderItemId="@Model.OrderItemId">Cancel</a>
+    </div>
+</form>

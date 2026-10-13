@@ -1,0 +1,10 @@
+@page
+@model PrintShop3D.Pages.ErrorModel
+@{ ViewData["Title"] = "Error"; }
+<h3>Something went wrong</h3>
+<p class="text-muted">An unexpected error occurred. If this keeps happening, please contact the administrator.</p>
+@if (Model.ShowRequestId)
+{
+    <p><small>Request ID: <code>@Model.RequestId</code></small></p>
+}
+<a class="btn btn-secondary" asp-page="/Index">Back to dashboard</a>

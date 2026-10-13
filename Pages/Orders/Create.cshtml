@@ -1,0 +1,55 @@
+@page
+@model PrintShop3D.Pages.Orders.CreateModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "New Order";
+    var initialLines = Model.Items.Select(i => new { itemId = i.ItemId, qty = i.Quantity, price = i.UnitPrice, createJob = i.CreateJob, priority = i.Priority, hours = i.EstimatedHours });
+}
+<h3>New Order</h3>
+<form method="post" asp-page="/Orders/Create" id="orderCreateForm" enctype="multipart/form-data">
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <partial name="_CustomerPicker" model="@(new CustomerPickerModel(Model.CustomersList, Model.CustomerId))" />
+        </div>
+    </div>
+
+    <h5>Order Items</h5>
+    <p class="text-muted">
+        Each line must be either a product OR a service. For a <strong>printing service</strong> you can upload several print files:
+        every file becomes its own order item with its own quantity and price, and can create its own production job.
+        The order total is the sum of all lines.
+    </p>
+
+    <div id="items"></div>
+    <button type="button" id="addLineBtn" class="btn btn-outline-secondary btn-sm mb-3">+ Add line</button>
+
+    <div class="card mb-3 border-0 shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">Order total</span>
+            <span class="fs-4 fw-bold" id="grandTotal">0.00</span>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Create Order (as DRAFT)</button>
+        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+    </div>
+</form>
+
+<partial name="_LineTemplate" model="@(new LineTemplateModel(Model.ProductsList, Model.ServicesList))" />
+
+@section Scripts {
+<script src="~/js/order-form.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const customer = OrderForm.initCustomer();
+        const initial = @Html.Raw(JsonSerializer.Serialize(initialLines));
+        const lines = OrderForm.initLines({
+            canSetFilePrice: @(Model.CanSetFilePrice ? "true" : "false"),
+            canOverridePrice: @(Model.CanOverridePrice ? "true" : "false"),
+            initialLines: initial.length ? initial : [null]
+        });
+        OrderForm.attachSubmit(document.getElementById('orderCreateForm'), customer, lines);
+    });
+</script>
+}

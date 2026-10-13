@@ -1,0 +1,21 @@
+@model PrintShop3D.Pages.Orders.CustomerPickerModel
+@using PrintShop3D.Models
+<label class="form-label">Customer</label>
+<input type="text" id="customerSearch" class="form-control" list="customerList"
+       placeholder="Search customer by name or code..." autocomplete="off" />
+<datalist id="customerList">
+    @foreach (var c in Model.Customers)
+    {
+        <option value="@c.Name (@c.CustomerCode)"
+                data-id="@c.CustomerId"
+                data-blacklisted="@(c.IsBlacklisted ? "true" : "false")"
+                data-blacklist-reason="@c.BlacklistReason"></option>
+    }
+</datalist>
+<input type="hidden" name="CustomerId" id="customerId" value="@Model.SelectedId" />
+<div id="customerError" class="text-danger small mt-1"></div>
+<div id="blacklistWarning" class="alert alert-danger mt-2 d-none" role="alert">
+    <strong>⚠ Blacklisted customer.</strong>
+    <span id="blacklistReason"></span>
+    <div class="small mt-1">You may continue with this order, but verify the customer before proceeding.</div>
+</div>

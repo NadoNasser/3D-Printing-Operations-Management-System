@@ -1,0 +1,27 @@
+@page
+@model PrintShop3D.Pages.Account.LoginModel
+@{ ViewData["Title"] = "Login"; }
+<div class="row justify-content-center">
+    <div class="col-md-4 mt-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title mb-3">Print Shop 3D - Sign in</h4>
+                <form method="post" asp-page="/Account/Login">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input asp-for="Input.Username" class="form-control" autofocus />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input asp-for="Input.Password" type="password" class="form-control" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger py-2">@Model.ErrorMessage</div>
+                    }
+                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

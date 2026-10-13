@@ -1,0 +1,40 @@
+@page
+@model PrintShop3D.Pages.PurchaseOrders.CreateModel
+@{ ViewData["Title"] = "New Purchase Order"; }
+<h3>New Purchase Order</h3>
+<form method="post" asp-page="/PurchaseOrders/Create">
+    <div class="row g-3 mb-3">
+        <div class="col-md-3"><label class="form-label">PO Number</label><input asp-for="PONumber" class="form-control" /></div>
+        <div class="col-md-4">
+            <label class="form-label">Supplier</label>
+            <select asp-for="SupplierId" class="form-select">
+                @foreach (var s in Model.SuppliersList) { <option value="@s.SupplierId">@s.Name</option> }
+            </select>
+        </div>
+        <div class="col-md-3"><label class="form-label">Expected Delivery</label><input asp-for="ExpectedDeliveryDate" type="date" class="form-control" /></div>
+    </div>
+
+    <h5>Items</h5>
+    <div id="items">
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+            <div class="row g-2 mb-2">
+                <div class="col-md-5">
+                    <select name="Items[@i].MaterialId" class="form-select">
+                        @foreach (var m in Model.MaterialsList)
+                        {
+                            <option value="@m.MaterialId" selected="@(m.MaterialId == Model.Items[i].MaterialId)">@m.SKU - @m.MaterialName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3"><input name="Items[@i].QuantityOrdered" value="@Model.Items[i].QuantityOrdered" class="form-control" placeholder="Quantity" /></div>
+                <div class="col-md-3"><input name="Items[@i].UnitCost" value="@Model.Items[i].UnitCost" class="form-control" placeholder="Unit cost" /></div>
+            </div>
+        }
+    </div>
+    <button type="submit" asp-page-handler="AddLine" class="btn btn-outline-secondary btn-sm mb-3">+ Add line</button>
+    <div>
+        <button type="submit" class="btn btn-primary">Save Purchase Order</button>
+        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+    </div>
+</form>

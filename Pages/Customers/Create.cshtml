@@ -1,0 +1,22 @@
+@page
+@model PrintShop3D.Pages.Customers.CreateModel
+@{ ViewData["Title"] = "New Customer"; }
+<h3>New Customer</h3>
+<form method="post" asp-page="/Customers/Create" class="row g-3">
+    <div class="col-md-4"><label class="form-label">Name</label><input asp-for="Customer.Name" class="form-control" /></div>
+    <div class="col-md-4"><label class="form-label">Phone</label><input asp-for="Customer.Phone" class="form-control" /></div>
+    <div class="col-md-4"><label class="form-label">Email</label><input asp-for="Customer.Email" class="form-control" /></div>
+    <div class="col-md-4"><label class="form-label">Company</label><input asp-for="Customer.Company" class="form-control" /></div>
+    <div class="col-md-12"><label class="form-label">Notes</label><textarea asp-for="Customer.Notes" class="form-control"></textarea></div>
+    <div class="col-md-3">
+        <div class="form-check form-switch mt-2">
+            <input asp-for="Customer.IsBlacklisted" class="form-check-input" id="blacklistSwitch" />
+            <label class="form-check-label text-danger fw-semibold" for="blacklistSwitch">Blacklisted customer</label>
+        </div>
+    </div>
+    <div class="col-md-9"><label class="form-label">Blacklist reason</label><input asp-for="Customer.BlacklistReason" class="form-control" maxlength="500" placeholder="Optional reason" /></div>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+    </div>
+</form>

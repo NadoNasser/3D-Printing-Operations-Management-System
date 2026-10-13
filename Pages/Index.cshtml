@@ -1,0 +1,17 @@
+@page
+@model PrintShop3D.Pages.IndexModel
+@{ ViewData["Title"] = "Dashboard"; }
+<h3 class="mb-4">Dashboard</h3>
+<div class="row g-3">
+    <div class="col-md-3"><div class="card text-bg-primary"><div class="card-body"><h6>Open Orders</h6><h2>@Model.OpenOrdersCount</h2><a class="text-white" asp-page="/Orders/Index" asp-route-statusFilter="OPEN">View open orders</a></div></div></div>
+    <div class="col-md-3"><div class="card text-bg-success"><div class="card-body"><h6>Printers Available</h6><h2>@Model.AvailablePrintersCount / @Model.TotalPrintersCount</h2><small>@Model.BusyPrintersCount busy</small></div></div></div>
+    <div class="col-md-3"><div class="card text-bg-warning"><div class="card-body"><h6>Low Stock Materials</h6><h2>@Model.LowStockMaterials.Count</h2><a class="text-dark" asp-page="/Materials/Index" asp-route-lowOnly="true">View low stock</a></div></div></div>
+    <div class="col-md-3"><div class="card text-bg-secondary"><div class="card-body"><h6>Jobs in Queue/Scheduled</h6><h2>@Model.QueuedJobsCount</h2><small>@Model.InProgressJobsCount in progress · @Model.QualityCheckJobsCount QC</small></div></div></div>
+</div>
+<div class="card mt-4"><div class="card-header">Attention Required</div><div class="list-group list-group-flush">
+@if (Model.LowStockMaterials.Any()) { <a class="list-group-item list-group-item-action" asp-page="/Materials/Index" asp-route-lowOnly="true">🟠 @Model.LowStockMaterials.Count material(s) are at or below reorder level.</a> }
+@if (Model.OverdueJobsCount > 0) { <a class="list-group-item list-group-item-action" asp-page="/ProductionJobs/Index">🔴 @Model.OverdueJobsCount production job(s) are overdue.</a> }
+@if (Model.UnpaidOrdersCount > 0) { <a class="list-group-item list-group-item-action" asp-page="/Orders/Index">🟠 @Model.UnpaidOrdersCount open order(s) have an outstanding balance.</a> }
+@if (!Model.LowStockMaterials.Any() && Model.OverdueJobsCount == 0 && Model.UnpaidOrdersCount == 0) { <div class="list-group-item text-success">✓ Nothing currently requires attention.</div> }
+</div></div>
+@if (Model.LowStockMaterials.Any()) { <div class="card mt-4"><div class="card-header">Materials needing reorder</div><table class="table mb-0"><thead><tr><th>SKU</th><th>Material</th><th>Current Stock</th><th>Reorder Level</th></tr></thead><tbody>@foreach (var m in Model.LowStockMaterials) { <tr class="table-warning"><td>@m.SKU</td><td>@m.MaterialName</td><td>@m.CurrentStockLevel @m.Unit</td><td>@m.ReorderLevel @m.Unit</td></tr> }</tbody></table></div> }

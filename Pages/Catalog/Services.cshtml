@@ -1,0 +1,43 @@
+@page
+@model PrintShop3D.Pages.Catalog.ServicesModel
+@{ ViewData["Title"] = "Services"; }
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link" asp-page="Products">Products</a></li>
+    <li class="nav-item"><a class="nav-link active" asp-page="Services">Services</a></li>
+</ul>
+<div class="row">
+    <div class="col-md-7">
+        <table class="table bg-white">
+            <thead><tr><th>Name</th><th>Category</th><th>Rate</th><th>Pricing Unit</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var s in Model.ServicesList)
+            {
+                <tr>
+                    <td>@s.Name</td><td>@s.Category</td><td>@s.BaseRate.ToString("N2")</td><td>@s.PricingUnit</td>
+                    <td><a class="btn btn-sm btn-outline-primary" asp-page="Services" asp-page-handler="Edit" asp-route-id="@s.ServiceId">Edit</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">@(Model.EditingId == null ? "New Service" : "Edit Service")</div>
+            <div class="card-body">
+                <form method="post" asp-page="/Catalog/Services">
+                    <input type="hidden" asp-for="Form.ServiceId" />
+                    <div class="mb-2"><label class="form-label">Name</label><input asp-for="Form.Name" class="form-control" /></div>
+                    <div class="mb-2"><label class="form-label">Category</label><input asp-for="Form.Category" class="form-control" /></div>
+                    <div class="mb-2"><label class="form-label">Description</label><textarea asp-for="Form.Description" class="form-control"></textarea></div>
+                    <div class="mb-2"><label class="form-label">Base Rate</label><input asp-for="Form.BaseRate" class="form-control" /></div>
+                    <div class="mb-2"><label class="form-label">Pricing Unit</label><input asp-for="Form.PricingUnit" class="form-control" /></div>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                    @if (Model.EditingId != null)
+                    {
+                        <a class="btn btn-secondary" asp-page="Services">Cancel</a>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

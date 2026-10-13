@@ -1,0 +1,19 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.Materials.AdjustModel
+@{ ViewData["Title"] = "Adjust Stock"; }
+<h3>Adjust Stock - @Model.MaterialName</h3>
+<p>Current stock: <strong>@Model.CurrentStock @Model.Unit</strong></p>
+<form method="post" asp-page="/Materials/Adjust" asp-route-id="@Model.MaterialId" class="row g-3">
+    <input type="hidden" asp-for="MaterialId" />
+    <div class="col-md-3">
+        <label class="form-label">Quantity change</label>
+        <input asp-for="Quantity" class="form-control" placeholder="e.g. 5 or -2" />
+        <div class="form-text">Positive to add stock, negative to remove.</div>
+    </div>
+    <div class="col-md-3"><label class="form-label">Unit Cost</label><input asp-for="UnitCost" class="form-control" /></div>
+    <div class="col-md-6"><label class="form-label">Reason (required)</label><input asp-for="Reason" class="form-control" /></div>
+    <div class="col-12">
+        <button class="btn btn-primary">Save Adjustment</button>
+        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+    </div>
+</form>

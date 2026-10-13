@@ -1,0 +1,145 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.Printers.MaintenanceModel
+@using PrintShop3D.Common
+@{ ViewData["Title"] = "Maintenance - " + Model.Printer.PrinterCode; }
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">Maintenance History</h3>
+        <div class="text-muted">@Model.Printer.PrinterCode — @Model.Printer.Brand @Model.Printer.Model</div>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="Profile" asp-route-id="@Model.Printer.PrinterId">Back to Profile</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Add Maintenance Record</strong></div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="Add">
+                    <input type="hidden" asp-for="PrinterId" />
+
+                    <div class="mb-3">
+                        <label asp-for="Type" class="form-label">Type</label>
+                        <select asp-for="Type" class="form-select">
+                            @foreach (var type in Model.MaintenanceTypes)
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="TechnicianId" class="form-label">Technician</label>
+                        <select asp-for="TechnicianId" class="form-select">
+                            <option value="">-- Select technician --</option>
+                            @foreach (var technician in Model.Technicians)
+                            {
+                                <option value="@technician.EmployeeId">@technician.FullName (@technician.EmployeeCode)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="TechnicianId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the maintenance work or issue..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Cost" class="form-label">Cost</label>
+                        <input asp-for="Cost" type="number" min="0" step="0.01" class="form-control" />
+                        <span asp-validation-for="Cost" class="text-danger"></span>
+                    </div>
+
+                    <div class="small text-muted mb-3">
+                        New records start as <strong>REPORTED</strong>. Starting maintenance changes the printer to <strong>MAINTENANCE</strong>.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Add Maintenance</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>History</strong>
+                <span class="badge @WorkflowRules.StatusBadgeClass(Model.Printer.Status)">@Model.Printer.Status</span>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.History.Any())
+                {
+                    <div class="p-4 text-center text-muted">No maintenance records have been recorded for this printer.</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Technician</th>
+                                    <th>Status</th>
+                                    <th>Cost</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var item in Model.History)
+                            {
+                                <tr>
+                                    <td>@item.Type</td>
+                                    <td>@(string.IsNullOrWhiteSpace(item.Description) ? "—" : item.Description)</td>
+                                    <td>@item.TechnicianName</td>
+                                    <td><span class="badge @Model.BadgeClass(item.Status)">@item.Status</span></td>
+                                    <td>@item.Cost.ToString("N2")</td>
+                                    <td>
+                                        @if (item.Status == "REPORTED")
+                                        {
+                                            <div class="d-flex gap-1">
+                                                <form method="post" asp-page-handler="Status">
+                                                    <input type="hidden" name="id" value="@Model.Printer.PrinterId" />
+                                                    <input type="hidden" name="maintenanceId" value="@item.MaintenanceId" />
+                                                    <input type="hidden" name="status" value="IN_PROGRESS" />
+                                                    <button class="btn btn-sm btn-outline-warning">Start</button>
+                                                </form>
+                                                <form method="post" asp-page-handler="Status">
+                                                    <input type="hidden" name="id" value="@Model.Printer.PrinterId" />
+                                                    <input type="hidden" name="maintenanceId" value="@item.MaintenanceId" />
+                                                    <input type="hidden" name="status" value="COMPLETED" />
+                                                    <button class="btn btn-sm btn-outline-success">Complete</button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (item.Status == "IN_PROGRESS")
+                                        {
+                                            <form method="post" asp-page-handler="Status">
+                                                <input type="hidden" name="id" value="@Model.Printer.PrinterId" />
+                                                <input type="hidden" name="maintenanceId" value="@item.MaintenanceId" />
+                                                <input type="hidden" name="status" value="COMPLETED" />
+                                                <button class="btn btn-sm btn-outline-success">Complete</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

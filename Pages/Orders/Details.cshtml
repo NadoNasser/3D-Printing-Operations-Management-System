@@ -1,0 +1,41 @@
+@page "{id:int}"
+@model PrintShop3D.Pages.Orders.DetailsModel
+@using PrintShop3D.Common
+@{ ViewData["Title"] = "Order #" + Model.Order.OrderId; }
+<h3>Order #@Model.Order.OrderId - @Model.Order.Customer?.Name</h3>
+<div class="mb-3 d-flex align-items-center gap-2"><span class="badge @WorkflowRules.StatusBadgeClass(Model.Order.Status)">@Model.Order.Status</span>@if (Model.Order.Status == "DRAFT") { <a class="btn btn-sm btn-outline-primary" asp-page="Edit" asp-route-id="@Model.Order.OrderId">Edit Order</a> }</div>
+<form method="post" asp-page-handler="Status" asp-route-id="@Model.Order.OrderId" class="mb-3">
+    <label class="form-label">Change status</label>
+    <select name="status" class="form-select form-select-sm d-inline w-auto">@foreach (var s in Model.AllowedStatuses) { <option value="@s" selected="@(s == Model.Order.Status )">@s</option> }</select>
+    <button class="btn btn-sm btn-outline-primary">Update Status</button>
+</form>
+<div class="small text-muted mb-3">Status: [@Model.Order.Status] · Allowed: @string.Join(", ", Model.AllowedStatuses)</div>
+<table class="table bg-white"><thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Line Total</th><th>Production</th><th>Files</th></tr></thead><tbody>
+@foreach (var i in Model.Order.Items)
+{
+<tr><td>@(i.Product?.Name ?? i.Service?.Name)</td><td>@i.Quantity</td><td>@i.UnitPrice.ToString("N2")</td><td>@i.LineTotal.ToString("N2")</td><td>@if (i.ProductionJobs.Any()) { <a asp-page="/ProductionJobs/Index" asp-route-orderId="@Model.Order.OrderId">@i.ProductionJobs.Count job(s)</a> } else { <span class="text-muted small">No production job</span> }</td>
+<td>
+    @if (i.Files.Any())
+    {
+        <div class="d-flex flex-column gap-1 mb-2">
+            @foreach (var file in i.Files.OrderByDescending(f => f.FileVersion))
+            {
+                <div class="small">
+                    <a asp-page="/Files/Index" asp-page-handler="Download" asp-route-fileId="@file.FileId" asp-route-orderItemId="@i.OrderItemId">@file.FileName@file.FileExtension</a>
+                    <span class="text-muted">v@file.FileVersion@(file.IsCurrent ? " · Current" : "")</span>
+                    <a class="btn btn-sm btn-link p-0 ms-2" asp-page="/Files/Edit" asp-route-fileId="@file.FileId">Edit</a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <span class="text-muted small d-block mb-2">No files</span>
+    }
+    <a class="btn btn-sm btn-outline-secondary" asp-page="/Files/Index" asp-route-orderItemId="@i.OrderItemId">@(i.Files.Any() ? $"Manage {i.Files.Count} file(s)" : "Add files")</a>
+</td></tr>
+}
+</tbody><tfoot><tr><th colspan="3" class="text-end">Total / Paid / Balance</th><th colspan="2">@Model.Order.TotalAmount.ToString("N2") / @Model.Order.TotalPaid.ToString("N2") / @Model.Order.Balance.ToString("N2")</th></tr></tfoot></table>
+<div class="row"><div class="col-md-6"><div class="card mb-3"><div class="card-header">Payments</div><ul class="list-group list-group-flush">@foreach (var p in Model.Order.Payments) { <li class="list-group-item d-flex justify-content-between"><span>@p.PaymentDate.ToString("g") - <span class="badge @WorkflowRules.StatusBadgeClass(p.PaymentStatus)">@p.PaymentStatus</span> @p.PaymentMethod</span><strong>@p.Amount.ToString("N2")</strong></li> }</ul><div class="card-body">@if (Model.Order.Balance > 0) { <a class="btn btn-sm btn-primary" asp-page="/Payments/Create" asp-route-orderId="@Model.Order.OrderId">+ Add Payment</a> } else { <span class="text-success">Paid in full.</span> }</div></div></div>
+<div class="col-md-6"><div class="card mb-3"><div class="card-header">Delivery</div><div class="card-body">@if (Model.Order.Deliveries.Any()) { var d = Model.Order.Deliveries.Last(); <p>Method: <strong>@d.Method</strong> · Status: <span class="badge @WorkflowRules.StatusBadgeClass(d.Status)">@d.Status</span></p><p>@d.Carrier @d.TrackingNumber</p><a class="btn btn-sm btn-outline-primary" asp-page="/Deliveries/Edit" asp-route-id="@d.DeliveryId">Update Delivery</a> } else { <a class="btn btn-sm btn-primary" asp-page="/Deliveries/Create" asp-route-orderId="@Model.Order.OrderId">+ Set up Delivery</a> }</div></div></div></div>
+<div class="card"><div class="card-header">Status History</div><ul class="list-group list-group-flush">@if (!Model.Order.StatusHistory.Any()) { <li class="list-group-item text-muted">No status changes recorded yet.</li> } @foreach (var h in Model.Order.StatusHistory.OrderByDescending(x => x.ChangedAt)) { <li class="list-group-item">@h.ChangedAt.ToString("g") · @h.FromStatus → @h.ToStatus · @(h.ChangedByEmployee?.FullName ?? "System")</li> }</ul></div>

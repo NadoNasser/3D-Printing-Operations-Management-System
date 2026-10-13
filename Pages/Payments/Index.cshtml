@@ -1,0 +1,43 @@
+@page
+@model PrintShop3D.Pages.Payments.IndexModel
+@{ ViewData["Title"] = "Payments"; }
+<h3 class="mb-3">Payments</h3>
+
+<form method="get" asp-page="/Payments/Index" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            @foreach (var s in DomainConstants.PaymentStatuses)
+            {
+                <option value="@s" selected="@(s == Model.StatusFilter )">@s</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto"><button class="btn btn-outline-secondary">Filter</button></div>
+    @if (Model.StatusFilter != null)
+    {
+        <div class="col-auto"><a class="btn btn-outline-secondary" asp-page="/Payments/Index">Clear</a></div>
+    }
+</form>
+
+<table class="table bg-white">
+    <thead><tr><th>Order #</th><th>Customer</th><th>Amount</th><th>Date</th><th>Method</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var p in Model.PaymentsList)
+    {
+        <tr>
+            <td><a asp-page="/Orders/Details" asp-route-id="@p.OrderId">#@p.OrderId</a></td>
+            <td>@p.Order?.Customer?.Name</td>
+            <td>@p.Amount.ToString("N2")</td>
+            <td>@p.PaymentDate.ToString("g")</td>
+            <td>@p.PaymentMethod</td>
+            <td><span class="badge @Model.BadgeClass(p.PaymentStatus)">@p.PaymentStatus</span></td>
+            <td><a class="btn btn-sm btn-outline-primary" asp-page="/Orders/Details" asp-route-id="@p.OrderId">Open Order</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+@if (!Model.PaymentsList.Any())
+{
+    <p class="text-muted">No payments recorded yet@(Model.StatusFilter != null ? $" with status {Model.StatusFilter}" : "").</p>
+}
